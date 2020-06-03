@@ -23,6 +23,9 @@ def autogen():
 def ib_server(graph, inputs):
     """ Takes as input an execution graph and the high-level inputs to the graph, performs the specified computation, returns the result """
     print(graph)
+    #evaluate the graph
+    print("evaluating graph")
+    print(graph("end"))
 
 #~~~ Test code ~~~#    
 
@@ -32,8 +35,10 @@ def example_client():
         #b = pf.placeholder(name='y')
         a = pf.constant(2)
         b = pf.constant(4)
-        c = a + b
-        c.name = "addition_"+str(nrand())
+        c = b - a
+        d = pf.constant(4)
+        e = d - c
+        e.name = "end"
         #print(graph.operations)
         for op in graph.operations:
             print(op)

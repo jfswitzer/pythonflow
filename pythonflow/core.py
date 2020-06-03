@@ -24,9 +24,11 @@ import threading
 import traceback
 import uuid
 
+import hashlib
+
 from .util import _noop_callback
 
-
+SAVED_VALUES = {}
 class Graph:
     """
     Data flow graph constituting a directed acyclic graph of operations.
@@ -315,7 +317,7 @@ class Operation:  # pylint:disable=too-few-public-methods,too-many-instance-attr
             Output of the operation given the context.
         """
         # Evaluate all explicit dependencies first
-        self.evaluate_dependencies(context, callback)
+        self.evaluate_dependencies(context, callback)     
 
         if self in context:
             return context[self]
@@ -326,8 +328,31 @@ class Operation:  # pylint:disable=too-few-public-methods,too-many-instance-attr
         # Evaluate the operation
         callback = callback or _noop_callback
         with callback(self, context):
-            context[self] = value = self._evaluate(*args, **kwargs)
+            context[self] = value = self.eval_with_ib(*args, **kwargs)          
         return value
+
+    def eval_with_ib(self, *args, **kwargs):
+        # ~jfs~
+        # Now see about cached values
+        argc = []
+        for arg in args:
+            argc.append(arg)
+        # hash these values to see if the result has already been computed
+        target = str(self.target)
+        args = str(argc)
+        m = hashlib.sha256()
+        m.update(target.encode('utf-8'))
+        m.update(args.encode('utf-8'))
+        h = m.digest()
+        saved = SAVED_VALUES.get(h, None)
+        if saved:
+            print("found saved val "+str(saved))
+            return saved
+        # hash these values to see if the result has already been computed
+        val = self._evaluate(*argc, **kwargs)
+        SAVED_VALUES[h] = val
+        print(val)
+        return val
 
     def _evaluate(self, *args, **kwargs):
         """
