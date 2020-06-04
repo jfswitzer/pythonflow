@@ -28,7 +28,9 @@ import hashlib
 
 from .util import _noop_callback
 
+#jfs
 SAVED_VALUES = {}
+
 class Graph:
     """
     Data flow graph constituting a directed acyclic graph of operations.
@@ -343,15 +345,15 @@ class Operation:  # pylint:disable=too-few-public-methods,too-many-instance-attr
         m = hashlib.sha256()
         m.update(target.encode('utf-8'))
         m.update(args.encode('utf-8'))
-        h = m.digest()
+        h = m.digest()      
         saved = SAVED_VALUES.get(h, None)
         if saved:
             print("found saved val "+str(saved))
+            print("target "+target+" args "+args+"h "+str(h))              
             return saved
         # hash these values to see if the result has already been computed
         val = self._evaluate(*argc, **kwargs)
         SAVED_VALUES[h] = val
-        print(val)
         return val
 
     def _evaluate(self, *args, **kwargs):
