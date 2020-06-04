@@ -24,13 +24,79 @@ import threading
 import traceback
 import uuid
 
+import random as rand
+
 import hashlib
 
 from .util import _noop_callback
 
 #jfs
 SAVED_VALUES = {}
+FROM_CACHE = 0
+FROM_COMPUTE = 0
 
+def printsaved():
+    global SAVED_VALUES
+    print(SAVED_VALUES)
+def autogen_problem():
+    global SAVED_VALUES
+    # jfs - just 0 - 20 for testing
+    n = rand.randint(0,20)
+    m = rand.randint(0,20)
+    # jfs - just +, - for now
+    op = rand.randint(0,1)
+    if (m == 0) & (op == 3):
+        m = 1
+    if (op == 0):
+        val = n + m
+        op = operator.add
+    elif (op == 1):
+        val = n - m
+        op = operator.sub
+    elif (op == 2):
+        val = n * m
+        op = operator.mul
+    else:
+        val = n / m
+        op = operator.truediv
+    target = op
+    args = [n, m]
+    m = hashlib.sha256()
+    m.update(str(target).encode('utf-8'))
+    m.update(str(args).encode('utf-8'))
+    h = m.digest()
+    SAVED_VALUES[h] = val
+    
+def autogen(n):
+    global SAVED_VALUES
+    """ autogenerates n problems"""
+    for _ in range(0,n):
+        autogen_problem()
+    
+
+def clear_saved():
+    global SAVED_VALUES
+    global FROM_CACHE
+    global FROM_COMPUTE
+    SAVED_VALUES = {}
+    FROM_CACHE = 0
+    FROM_COMPUTE = 0
+
+def clear_testvals():  
+    global FROM_CACHE
+    global FROM_COMPUTE
+    FROM_CACHE = 0
+    FROM_COMPUTE = 0    
+
+def saved_values():
+    global SAVED_VALUES
+    return SAVED_VALUES
+def from_cache():
+    global FROM_CACHE    
+    return str(FROM_CACHE)
+def from_compute():
+    global FROM_COMPUTE    
+    return str(FROM_COMPUTE)
 class Graph:
     """
     Data flow graph constituting a directed acyclic graph of operations.
@@ -335,11 +401,12 @@ class Operation:  # pylint:disable=too-few-public-methods,too-many-instance-attr
 
     def eval_with_ib(self, *args, **kwargs):
         # ~jfs~
-        # Now see about cached values
+        global SAVED_VALUES
+        global FROM_CACHE
+        global FROM_COMPUTE        
         argc = []
         for arg in args:
             argc.append(arg)
-        # hash these values to see if the result has already been computed
         target = str(self.target)
         args = str(argc)
         m = hashlib.sha256()
@@ -348,10 +415,10 @@ class Operation:  # pylint:disable=too-few-public-methods,too-many-instance-attr
         h = m.digest()      
         saved = SAVED_VALUES.get(h, None)
         if saved:
-            print("found saved val "+str(saved))
-            print("target "+target+" args "+args+"h "+str(h))              
+            #print("found saved val "+str(saved))
+            FROM_CACHE+=1
             return saved
-        # hash these values to see if the result has already been computed
+        FROM_COMPUTE+=1
         val = self._evaluate(*argc, **kwargs)
         SAVED_VALUES[h] = val
         return val
