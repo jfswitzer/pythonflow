@@ -30,19 +30,18 @@ import hashlib
 
 from .util import _noop_callback
 
-#jfs
+# ~~~~~~~ IB utils ~~~~~~ #
+# ~~~~~~~~~~ jfs ~~~~~~~~ #  
+
 SAVED_VALUES = {}
 FROM_CACHE = 0
 FROM_COMPUTE = 0
 
-def printsaved():
-    global SAVED_VALUES
-    print(SAVED_VALUES)
 def autogen_problem():
     global SAVED_VALUES
-    # jfs - just 0 - 20 for testing
-    n = rand.randint(0,20)
-    m = rand.randint(0,20)
+    # jfs - just 0 - 50 for testing
+    n = rand.randint(0,50)
+    m = rand.randint(0,50)
     # jfs - just +, - for now
     op = rand.randint(0,1)
     if (m == 0) & (op == 3):
@@ -72,8 +71,11 @@ def autogen(n):
     """ autogenerates n problems"""
     for _ in range(0,n):
         autogen_problem()
-    
 
+def printsaved():
+    global SAVED_VALUES
+    print(SAVED_VALUES)
+    
 def clear_saved():
     global SAVED_VALUES
     global FROM_CACHE
@@ -97,6 +99,9 @@ def from_cache():
 def from_compute():
     global FROM_COMPUTE    
     return str(FROM_COMPUTE)
+
+# ~~~~~~ end IB ~~~~~~ #
+
 class Graph:
     """
     Data flow graph constituting a directed acyclic graph of operations.

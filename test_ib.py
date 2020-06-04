@@ -2,7 +2,7 @@ import pythonflow as pf
 import random
 
 def rand():
-    return pf.constant(random.randint(0, 20))
+    return pf.constant(random.randint(0, 50))
 def build():
     with pf.Graph() as graph:
         a = rand()
